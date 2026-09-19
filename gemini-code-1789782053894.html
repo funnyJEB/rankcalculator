@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>신나는 반별 등수 계산기 🏆</title>
+    <style>
+        :root {
+            --primary-color: #ffb703; /* 활기찬 옐로우 */
+            --secondary-color: #fb8500; /* 상큼한 오렌지 */
+            --bg-color: #f0fdf4; /* 싱그러운 연두빛 배경 */
+            --card-bg: #ffffff;
+            --border-color: #bbf7d0;
+            --text-color: #1e293b;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        /* 최상단 1열 배치 (타이틀 + 버튼들 일렬 고정) */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1400px;
+            background: #ffffff;
+            padding: 10px 20px;
+            border-radius: 50px; /* 둥글둥글하고 귀여운 스타일 */
+            box-shadow: 0 4px 15px rgba(74, 222, 128, 0.15);
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 20px;
+            margin: 0;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .btn-config { background-color: #60a5fa; color: white; } /* 스카이블루 */
+        .btn-config:hover { background-color: #3b82f6; transform: scale(1.05); }
+        
+        .btn-calc { background-color: #4ade80; color: white; } /* 민트그린 */
+        .btn-calc:hover { background-color: #22c55e; transform: scale(1.05); }
+        
+        .btn-toggle { background-color: #f43f5e; color: white; } /* 러블리 핑크 */
+        .btn-toggle:hover { background-color: #e11d48; transform: scale(1.05); }
+
+        /* 테이블 컨테이너 (평시 화면 1/3) */
+        .table-container {
+            width: 33.33%;
+            min-width: 450px;
+            overflow-x: auto;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(74, 222, 128, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 3px solid #bbf7d0;
+        }
+
+        /* 확대 시 스타일 */
+        .table-container.expanded {
+            width: 85%;
+            max-width: 1400px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            table-layout: fixed;
+        }
+
+        th, td {
+            border: 2px solid #f0fdf4;
+            padding: 8px 6px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        th {
+            background-color: #dcfce7; /* 밝은 녹색 톤으로 변경 */
+            color: #166534;
+            font-weight: 800;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        th:hover {
+            background-color: #bbf7d0;
+        }
+
+        /* 입력 폼 및 정렬 버튼 축약 스타일 */
+        .event-name-input {
+            width: 85%;
+            border: 2px solid #86efac;
+            border-radius: 8px;
+            padding: 4px;
+            text-align: center;
+            font-weight: bold;
+            color: #15803d;
+            background-color: #fff;
+        }
+
+        /* 콤팩트해진 정렬 전환 버튼 */
+        .sort-toggle {
+            margin-top: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: inline-block;
+            user-select: none;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .sort-toggle.low-best { background-color: #ffedd5; color: #ea580c; }
+        .sort-toggle.high-best { background-color: #e0f2fe; color: #0284c7; }
+
+        input[type="number"] {
+            width: 85%;
+            padding: 6px 4px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+        input[type="number"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            background-color: #fffdf5;
+        }
+
+        /* 애니메이션 효과용 클래스 */
+        .hidden-col {
+            width: 0px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: hidden;
+            border: none !important;
+            opacity: 0;
+        }
+        .hidden-col * { display: none !important; }
+
+        .expanded-col {
+            width: 55% !important;
+            background-color: #fef9c3 !important; /* 확대 시 부드러운 노란색 하이라이트 */
+        }
+        .expanded-col input[type="number"] {
+            font-size: 16px;
+            padding: 8px;
+            border-color: var(--primary-color);
+        }
+
+        /* 반 이름 열 스타일 */
+        .class-cell {
+            background-color: #fef08a;
+            color: #854d0e;
+            font-weight: 700;
+            border-radius: 6px;
+        }
+
+        /* 등수 스타일 (디폴트 오픈) */
+        .rank-cell {
+            font-weight: 800;
+            color: #ef4444;
+            font-size: 15px;
+        }
+        
+        /* 등수 가리기 모드 (밝고 궁금증을 자아내는 물음표 스타일) */
+        .rank-hidden {
+            background-color: #fef08a !important;
+            color: #ca8a04 !important;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-header">
+        <h1>🥳 신나는 반별 등수 계산기 🏆</h1>
+        <div class="controls">
+            <button class="btn-config" onclick="promptEventCount()">종목 수 변경</button>
+            <button class="btn-calc" onclick="calculateRankings()">등수 계산</button>
+            <button class="btn-toggle" onclick="toggleRankVisibility()">등수 가리기/보이기</button>
+        </div>
+    </div>
+
+    <div class="table-container" id="tableContainer">
+        <table id="scoreTable">
+            <thead>
+                <tr id="headerRow">
+                    </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        let eventCount = 3; // 기본 종목 수
+        let isRankVisible = true; // ★ 등수 표시 여부 디폴트는 상시 노출(true)
+        let expandedColumnIndex = null; 
+
+        window.onload = function() {
+            renderTable();
+        };
+
+        function promptEventCount() {
+            const count = prompt("원하는 종목의 개수를 입력하세요:", eventCount);
+            if (count && !isNaN(count) && count > 0) {
+                eventCount = parseInt(count);
+                renderTable();
+            }
+        }
+
+        function renderTable() {
+            const headerRow = document.getElementById('headerRow');
+            const tableBody = document.getElementById('tableBody');
+            
+            headerRow.innerHTML = '';
+            tableBody.innerHTML = '';
+            expandedColumnIndex = null;
+            document.getElementById('tableContainer').classList.remove('expanded');
+
+            // 1. 헤더 생성
+            const thClass = document.createElement('th');
+            thClass.style.width = '65px';
+            thClass.innerText = '반';
+            thClass.onclick = resetColumnExpansion; 
+            headerRow.appendChild(thClass);
+
+            for (let i = 1; i <= eventCount; i++) {
+                const th = document.createElement('th');
+                th.dataset.colIndex = i;
+                
+                th.onclick = function(e) {
+                    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'DIV') {
+                        toggleColumnExpansion(i);
+                    }
+                };
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'event-name-input';
+                input.value = `종목 ${i}`;
+                
+                // ★ 정렬 문구 축약 (⬇️낮은순 / ⬆️높은순)
+                const toggleDiv = document.createElement('div');
+                toggleDiv.className = 'sort-toggle low-best';
+                toggleDiv.innerText = '⬇️낮은순';
+                toggleDiv.dataset.sort = 'low';
+                toggleDiv.onclick = function(e) {
+                    e.stopPropagation();
+                    if (this.dataset.sort === 'low') {
+                        this.dataset.sort = 'high';
+                        this.className = 'sort-toggle high-best';
+                        this.innerText = '⬆️높은순';
+                    } else {
+                        this.dataset.sort = 'low';
+                        this.className = 'sort-toggle low-best';
+                        this.innerText = '⬇️낮은순';
+                    }
+                };
+
+                th.appendChild(input);
+                th.appendChild(toggleDiv);
+                headerRow.appendChild(th);
+            }
+
+            const thRank = document.createElement('th');
+            thRank.style.width = '85px';
+            thRank.innerText = '종합 순위';
+            thRank.onclick = resetColumnExpansion;
+            headerRow.appendChild(thRank);
+
+            // 2. 바디 행 생성 (1반 ~ 10반)
+            for (let row = 1; row <= 10; row++) {
+                const tr = document.createElement('tr');
+
+                const tdClass = document.createElement('td');
+                tdClass.className = 'class-cell';
+                tdClass.innerText = `${row}반`;
+                tr.appendChild(tdClass);
+
+                for (let col = 1; col <= eventCount; col++) {
+                    const td = document.createElement('td');
+                    td.dataset.colIndex = col;
+                    
+                    const scoreInput = document.createElement('input');
+                    scoreInput.type = 'number';
+                    scoreInput.className = `score-input-col-${col}`;
+                    scoreInput.placeholder = '-';
+                    
+                    td.appendChild(scoreInput);
+                    tr.appendChild(td);
+                }
+
+                const tdRank = document.createElement('td');
+                tdRank.className = 'rank-cell';
+                tdRank.innerText = '-';
+                tr.appendChild(tdRank);
+
+                tableBody.appendChild(tr);
+            }
+            
+            // 테이블 재생성 후 숨김 상태 동기화
+            updateRankStyles();
+        }
+
+        function toggleColumnExpansion(colIndex) {
+            const container = document.getElementById('tableContainer');
+            
+            if (expandedColumnIndex === colIndex) {
+                resetColumnExpansion();
+                return;
+            }
+
+            expandedColumnIndex = colIndex;
+            container.classList.add('expanded');
+
+            const cells = document.querySelectorAll('#scoreTable th, #scoreTable td');
+            cells.forEach(cell => {
+                const idx = cell.dataset.colIndex;
+                if (idx) {
+                    if (parseInt(idx) === colIndex) {
+                        cell.classList.remove('hidden-col');
+                        cell.classList.add('expanded-col');
+                    } else {
+                        cell.classList.remove('expanded-col');
+                        cell.classList.add('hidden-col');
+                    }
+                }
+            });
+        }
+
+        function resetColumnExpansion() {
+            expandedColumnIndex = null;
+            document.getElementById('tableContainer').classList.remove('expanded');
+            const cells = document.querySelectorAll('#scoreTable th, #scoreTable td');
+            cells.forEach(cell => {
+                cell.classList.remove('hidden-col');
+                cell.classList.remove('expanded-col');
+            });
+        }
+
+        function calculateRankings() {
+            const rows = document.querySelectorAll('#tableBody tr');
+            const classPoints = Array.from({length: 10}, (_, i) => ({ classIdx: i, totalRankPoints: 0, hasData: false }));
+
+            for (let col = 1; col <= eventCount; col++) {
+                const sortType = document.querySelector(`th[data-col-index="${col}"] .sort-toggle`).dataset.sort;
+                const colScores = [];
+
+                rows.forEach((tr, classIdx) => {
+                    const input = tr.querySelector(`.score-input-col-${col}`);
+                    const val = input.value.trim();
+                    if (val !== "") {
+                        colScores.push({ classIdx, score: parseFloat(val) });
+                        classPoints[classIdx].hasData = true;
+                    }
+                });
+
+                if (sortType === 'low') {
+                    colScores.sort((a, b) => a.score - b.score);
+                } else {
+                    colScores.sort((a, b) => b.score - a.score);
+                }
+
+                let currentRank = 1;
+                for (let i = 0; i < colScores.length; i++) {
+                    if (i > 0 && colScores[i].score !== colScores[i-1].score) {
+                        currentRank = i + 1;
+                    }
+                    classPoints[colScores[i].classIdx].totalRankPoints += currentRank;
+                }
+                
+                classPoints.forEach(cp => {
+                    const mapped = colScores.find(cs => cs.classIdx === cp.classIdx);
+                    if (!mapped && cp.hasData) {
+                        cp.totalRankPoints += 11; 
+                    }
+                });
+            }
+
+            const activeClasses = classPoints.filter(cp => cp.hasData);
+            activeClasses.sort((a, b) => a.totalRankPoints - b.totalRankPoints);
+
+            rows.forEach((tr, classIdx) => {
+                const rankCell = tr.querySelector('.rank-cell');
+                const cp = classPoints.find(c => c.classIdx === classIdx);
+                
+                if (!cp.hasData) {
+                    rankCell.innerText = '-';
+                    rankCell.dataset.realRank = '-';
+                    return;
+                }
+
+                let finalRank = 1;
+                for (let i = 0; i < activeClasses.length; i++) {
+                    if (activeClasses[i].classIdx === classIdx) {
+                        if (i > 0 && activeClasses[i].totalRankPoints === activeClasses[i-1].totalRankPoints) {
+                            let target = i;
+                            while(target > 0 && activeClasses[target].totalRankPoints === activeClasses[target-1].totalRankPoints) {
+                                target--;
+                            }
+                            finalRank = target + 1;
+                        } else {
+                            finalRank = i + 1;
+                        }
+                        break;
+                    }
+                }
+                // 실시간 등수 데이터를 임시 백업해두고 스타일에 맞춰 표기
+                rankCell.dataset.realRank = `${finalRank}등`;
+                updateRankStyles();
+            });
+        }
+
+        // ★ 등수 보이기/가리기 토글 (UI 처리 수정)
+        function toggleRankVisibility() {
+            isRankVisible = !isRankVisible;
+            updateRankStyles();
+        }
+
+        // 등수 노출 상태에 따라 텍스트와 디자인을 변환해주는 함수
+        function updateRankStyles() {
+            const rankCells = document.querySelectorAll('.rank-cell');
+            rankCells.forEach(cell => {
+                const realRank = cell.dataset.realRank || '-';
+                
+                if (realRank === '-') {
+                    cell.innerText = '-';
+                    cell.classList.remove('rank-hidden');
+                    return;
+                }
+
+                if (isRankVisible) {
+                    cell.innerText = realRank;
+                    cell.classList.remove('rank-hidden');
+                } else {
+                    cell.innerText = '❓'; // 귀여운 물음표로 숨김 처리
+                    cell.classList.add('rank-hidden');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
