@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>신나는 반별 등수 계산기 🏆</title>
+    <title>반별 등수 계산기 🏆</title>
     <style>
         :root {
-            --primary-color: #ffb703; /* 활기찬 옐로우 */
-            --secondary-color: #fb8500; /* 상큼한 오렌지 */
-            --bg-color: #f0fdf4; /* 싱그러운 연두빛 배경 */
+            --primary-color: #fb5607;   /* 선셋 오렌지 */
+            --secondary-color: #ff006e; /* 정열적인 크림슨 */
+            --bg-color: #fffbe2;        /* 따뜻하고 밝은 아이보리 배경 */
             --card-bg: #ffffff;
-            --border-color: #bbf7d0;
-            --text-color: #1e293b;
+            --border-color: #fde047;
+            --text-color: #2b2d42;
         }
 
         body {
@@ -34,8 +34,8 @@
             max-width: 1400px;
             background: #ffffff;
             padding: 10px 20px;
-            border-radius: 50px; /* 둥글둥글하고 귀여운 스타일 */
-            box-shadow: 0 4px 15px rgba(74, 222, 128, 0.15);
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(251, 86, 7, 0.15); /* 주황빛 그림자 */
             margin-bottom: 15px;
             box-sizing: border-box;
         }
@@ -43,7 +43,7 @@
         h1 {
             font-size: 20px;
             margin: 0;
-            color: var(--secondary-color);
+            color: var(--primary-color);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -65,14 +65,15 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
-        .btn-config { background-color: #60a5fa; color: white; } /* 스카이블루 */
-        .btn-config:hover { background-color: #3b82f6; transform: scale(1.05); }
+        /* 버튼들 - 따뜻하고 강렬한 색조 */
+        .btn-config { background-color: #ffb703; color: #000; } /* 옐로우 */
+        .btn-config:hover { background-color: #fb8500; transform: scale(1.05); }
         
-        .btn-calc { background-color: #4ade80; color: white; } /* 민트그린 */
-        .btn-calc:hover { background-color: #22c55e; transform: scale(1.05); }
+        .btn-calc { background-color: #fb5607; color: white; } /* 선셋 오렌지 */
+        .btn-calc:hover { background-color: #d00000; transform: scale(1.05); }
         
-        .btn-toggle { background-color: #f43f5e; color: white; } /* 러블리 핑크 */
-        .btn-toggle:hover { background-color: #e11d48; transform: scale(1.05); }
+        .btn-toggle { background-color: #ff006e; color: white; } /* 핫 핑크/레드 */
+        .btn-toggle:hover { background-color: #9e0059; transform: scale(1.05); }
 
         /* 테이블 컨테이너 (평시 화면 1/3) */
         .table-container {
@@ -82,9 +83,9 @@
             background: var(--card-bg);
             padding: 15px;
             border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(74, 222, 128, 0.1);
+            box-shadow: 0 10px 25px rgba(251, 86, 7, 0.12);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 3px solid #bbf7d0;
+            border: 3px solid #fde047; /* 활기찬 옐로우 테두리 */
         }
 
         /* 확대 시 스타일 */
@@ -108,15 +109,15 @@
         }
 
         th {
-            background-color: #dcfce7; /* 밝은 녹색 톤으로 변경 */
-            color: #166534;
+            background-color: #fef08a; /* 따뜻한 옐로우 헤더 */
+            color: #854d0e;
             font-weight: 800;
             cursor: pointer;
             border-radius: 8px;
         }
 
         th:hover {
-            background-color: #bbf7d0;
+            background-color: #fde047;
         }
 
         /* 입력 폼 및 정렬 버튼 축약 스타일 */
@@ -143,8 +144,9 @@
             cursor: pointer;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .sort-toggle.low-best { background-color: #ffedd5; color: #ea580c; }
-        .sort-toggle.high-best { background-color: #e0f2fe; color: #0284c7; }
+        /* 정렬 콤팩트 버튼 */
+        .sort-toggle.low-best { background-color: #ffe4e6; color: #e11d48; }
+        .sort-toggle.high-best { background-color: #fef3c7; color: #d97706; }
 
         input[type="number"] {
             width: 85%;
@@ -173,7 +175,7 @@
 
         .expanded-col {
             width: 55% !important;
-            background-color: #fef9c3 !important; /* 확대 시 부드러운 노란색 하이라이트 */
+            background-color: #ffedd5 !important; /* 주황빛 하이라이트 */
         }
         .expanded-col input[type="number"] {
             font-size: 16px;
@@ -183,8 +185,8 @@
 
         /* 반 이름 열 스타일 */
         .class-cell {
-            background-color: #fef08a;
-            color: #854d0e;
+            background-color: #ffedd5; /* 연한 오렌지 반 셀 */
+            color: #c2410c;
             font-weight: 700;
             border-radius: 6px;
         }
@@ -198,8 +200,8 @@
         
         /* 등수 가리기 모드 (밝고 궁금증을 자아내는 물음표 스타일) */
         .rank-hidden {
-            background-color: #fef08a !important;
-            color: #ca8a04 !important;
+            background-color: #ffedd5 !important;
+            color: #ea580c !important;
             font-size: 14px;
             cursor: pointer;
             border-radius: 6px;
